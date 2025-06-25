@@ -72,7 +72,7 @@ export const ResultCard: React.FC<ResultCardProps> = ({ place, index }) => {
           </p>
           
           <div className="flex items-center gap-3 mb-4 flex-wrap">
-            {getOpenStatus()}
+            {/* {getOpenStatus()} */}
             
             {place.rating && (
               <div className="flex items-center gap-1 bg-yellow-50 px-2 py-1 rounded-lg">
