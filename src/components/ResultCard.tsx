@@ -61,26 +61,28 @@ export const ResultCard: React.FC<ResultCardProps> = ({ place, index }) => {
         </div>
         
         <div className="flex-1 min-w-0">
-          <div className="flex items-start justify-between mb-2">
-            <h3 className="text-xl font-semibold text-gray-800 truncate">
+          <div className="mb-2">
+            <h3 className="text-xl font-semibold text-gray-800 break-words">
               {place.name}
             </h3>
-            {place.rating && (
-              <div className="flex items-center gap-1 bg-yellow-50 px-2 py-1 rounded-lg flex-shrink-0 ml-2">
-                <Star className="w-4 h-4 text-yellow-500 fill-current" />
-                <span className="text-sm font-medium text-yellow-700">
-                  {place.rating.toFixed(1)}
-                </span>
-              </div>
-            )}
           </div>
           
           <p className="text-gray-600 mb-3 line-clamp-2">
             {place.formatted_address}
           </p>
           
-          <div className="flex items-center gap-3 mb-4">
+          <div className="flex items-center gap-3 mb-4 flex-wrap">
             {getOpenStatus()}
+            
+            {place.rating && (
+              <div className="flex items-center gap-1 bg-yellow-50 px-2 py-1 rounded-lg">
+                <Star className="w-4 h-4 text-yellow-500 fill-current" />
+                <span className="text-sm font-medium text-yellow-700">
+                  {place.rating.toFixed(1)}
+                </span>
+              </div>
+            )}
+            
             {place.price_level && (
               <span className="text-sm text-gray-500 font-medium">
                 {getPriceLevel(place.price_level)}
