@@ -1,6 +1,7 @@
 // Updated API file using Google Places JavaScript API (no CORS issues)
 import { Place, } from '../types';
 
+
 // Declare global google object
 declare global {
   interface Window {
@@ -8,6 +9,19 @@ declare global {
     initMap: () => void;
   }
 }
+
+// Get API keys from environment variables
+// If using Vite:
+const DEFAULT_OPENAI_KEY = import.meta.env.VITE_OPENAI_API_KEY || '';
+const DEFAULT_GOOGLE_MAPS_KEY = import.meta.env.VITE_GOOGLE_MAPS_API_KEY || '';
+
+// If using Create React App, add the following type declaration at the top of the file or in a global.d.ts file:
+// declare const process: {
+//   env: {
+//     REACT_APP_OPENAI_API_KEY?: string;
+//     REACT_APP_GOOGLE_MAPS_API_KEY?: string;
+//   };
+// };
 
 // Load Google Maps JavaScript API
 export const loadGoogleMapsAPI = (apiKey: string): Promise<void> => {
@@ -54,6 +68,7 @@ const initializePlacesService = () => {
 };
 
 export const interpretPrompt = async (prompt: string, apiKey: string): Promise<string> => {
+  const finalApiKey = apiKey.trim() || DEFAULT_OPENAI_KEY;
   const cacheKey = `prompt_${btoa(prompt.substring(0, 50))}`;
   
   // Check cache first
@@ -70,7 +85,7 @@ export const interpretPrompt = async (prompt: string, apiKey: string): Promise<s
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${apiKey.trim()}`
+        'Authorization': `Bearer ${finalApiKey}`
       },
       body: JSON.stringify({
         model: 'gpt-3.5-turbo',
@@ -115,9 +130,11 @@ export const searchPlaces = async (
   location: { lat: number; lng: number },
   apiKey: string
 ): Promise<Place[]> => {
+  const finalApiKey = apiKey.trim() || DEFAULT_GOOGLE_MAPS_KEY;
+  
   try {
     // Load Google Maps API if not already loaded
-    await loadGoogleMapsAPI(apiKey);
+    await loadGoogleMapsAPI(finalApiKey);
     
     // Initialize places service
     const service = initializePlacesService();
@@ -134,9 +151,26 @@ export const searchPlaces = async (
         type: getPlaceType(interpretation)
       };
 
-      service.textSearch(request, (results: any[], status: any) => {
+      service.textSearch(request, async (results: any[], status: any) => {
         if (status === window.google.maps.places.PlacesServiceStatus.OK) {
+          // Transform basic results
           const places = results.slice(0, 15).map(transformGooglePlace);
+          
+          // Optionally enhance with detailed info (uncomment if you want full details)
+          // const enhancedPlaces = await Promise.allSettled(
+          //   places.map(async (place) => {
+          //     try {
+          //       const details = await getPlaceDetails(place.place_id, service);
+          //       return { ...place, ...transformDetailedPlace(details) };
+          //     } catch (error) {
+          //       return place; // Return basic place if details fail
+          //     }
+          //   })
+          // );
+          // resolve(enhancedPlaces.map(result => 
+          //   result.status === 'fulfilled' ? result.value : places.find(p => true)
+          // ));
+          
           resolve(places);
         } else if (status === window.google.maps.places.PlacesServiceStatus.ZERO_RESULTS) {
           resolve([]);
@@ -153,6 +187,8 @@ export const searchPlaces = async (
   }
 };
 
+
+
 // Transform Google Places result to match your Place interface
 const transformGooglePlace = (place: any): Place => {
   return {
@@ -162,7 +198,7 @@ const transformGooglePlace = (place: any): Place => {
     formatted_address: place.formatted_address || place.vicinity || '',
     formatted_phone_number: place.formatted_phone_number,
     opening_hours: place.opening_hours ? {
-      open_now: place.opening_hours.open_now || false,
+      open_now: false, // Deprecated field - always set to false to avoid warnings
       weekday_text: place.opening_hours.weekday_text || []
     } : undefined,
     geometry: place.geometry || {
@@ -260,7 +296,7 @@ const DEFAULT_LOCATIONS = {
 };
 
 export const getCurrentLocation = (): Promise<{ lat: number; lng: number }> => {
-  return new Promise((resolve,) => {
+  return new Promise((resolve) => {
     if (!navigator.geolocation) {
       console.warn('Geolocation not supported, using fallback location');
       resolve(DEFAULT_LOCATIONS['Kochi']);
