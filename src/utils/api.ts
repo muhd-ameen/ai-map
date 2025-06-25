@@ -1,6 +1,10 @@
 // Updated API file using Google Places JavaScript API (no CORS issues)
 import { Place, } from '../types';
 
+// Get API keys from environment variables
+// If using Vite:
+const DEFAULT_OPENAI_KEY = import.meta.env.VITE_OPENAI_API_KEY || '';
+const DEFAULT_GOOGLE_MAPS_KEY = import.meta.env.VITE_GOOGLE_MAPS_API_KEY || '';
 
 // Declare global google object
 declare global {
@@ -9,19 +13,6 @@ declare global {
     initMap: () => void;
   }
 }
-
-// Get API keys from environment variables
-// If using Vite:
-const DEFAULT_OPENAI_KEY = import.meta.env.VITE_OPENAI_API_KEY || '';
-const DEFAULT_GOOGLE_MAPS_KEY = import.meta.env.VITE_GOOGLE_MAPS_API_KEY || '';
-
-// If using Create React App, add the following type declaration at the top of the file or in a global.d.ts file:
-// declare const process: {
-//   env: {
-//     REACT_APP_OPENAI_API_KEY?: string;
-//     REACT_APP_GOOGLE_MAPS_API_KEY?: string;
-//   };
-// };
 
 // Load Google Maps JavaScript API
 export const loadGoogleMapsAPI = (apiKey: string): Promise<void> => {
@@ -68,7 +59,14 @@ const initializePlacesService = () => {
 };
 
 export const interpretPrompt = async (prompt: string, apiKey: string): Promise<string> => {
-  const finalApiKey = apiKey.trim() || DEFAULT_OPENAI_KEY;
+  const finalApiKey = apiKey?.trim() || DEFAULT_OPENAI_KEY;
+  
+  // If no API key available, return fallback
+  if (!finalApiKey) {
+    console.warn('No OpenAI API key available, using fallback interpretation');
+    return extractSearchQueryFallback(prompt);
+  }
+  
   const cacheKey = `prompt_${btoa(prompt.substring(0, 50))}`;
   
   // Check cache first
@@ -130,7 +128,12 @@ export const searchPlaces = async (
   location: { lat: number; lng: number },
   apiKey: string
 ): Promise<Place[]> => {
-  const finalApiKey = apiKey.trim() || DEFAULT_GOOGLE_MAPS_KEY;
+  const finalApiKey = apiKey?.trim() || DEFAULT_GOOGLE_MAPS_KEY;
+  
+  // If no API key available, throw error
+  if (!finalApiKey) {
+    throw new Error('Google Maps API key is required. Please configure your API keys in settings first.');
+  }
   
   try {
     // Load Google Maps API if not already loaded

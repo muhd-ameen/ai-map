@@ -25,7 +25,11 @@ function App() {
   }, []);
 
   const handleSearch = async (query: string) => {
-    if (!apiKeys.openai.trim() || !apiKeys.googleMaps.trim()) {
+    // Check both user input AND environment variables
+    const hasOpenAI = apiKeys.openai?.trim() || import.meta.env.VITE_OPENAI_API_KEY;
+    const hasGoogle = apiKeys.googleMaps?.trim() || import.meta.env.VITE_GOOGLE_MAPS_API_KEY;
+    
+    if (!hasOpenAI || !hasGoogle) {
       setError('Please configure your API keys in settings first.');
       return;
     }
