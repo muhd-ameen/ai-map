@@ -107,21 +107,33 @@ function App() {
           </div>
         )}
         
-        {!isLoading && !results && !error && (
-          <div className="text-center max-w-lg mx-auto">
-            <div className="p-8 bg-gradient-to-r from-indigo-50 to-purple-50 rounded-2xl">
-              <div className="w-16 h-16 bg-gradient-to-r from-indigo-500 to-purple-600 rounded-2xl mx-auto mb-4 flex items-center justify-center">
-                <MapPin className="w-8 h-8 text-white" />
-              </div>
-              <h3 className="text-xl font-semibold text-gray-800 mb-2">
-                Ready to explore?
-              </h3>
-              <p className="text-gray-600">
-                Configure your API keys in settings and start discovering amazing places with AI.
-              </p>
+       {!isLoading && !results && !error && (
+  (() => {
+    // Check if we have API keys (either from user or environment)
+    const hasOpenAI = apiKeys.openai?.trim() || import.meta.env.VITE_OPENAI_API_KEY;
+    const hasGoogle = apiKeys.googleMaps?.trim() || import.meta.env.VITE_GOOGLE_MAPS_API_KEY;
+    
+    // Only show if no API keys are available
+    if (!hasOpenAI || !hasGoogle) {
+      return (
+        <div className="text-center max-w-lg mx-auto">
+          <div className="p-8 bg-gradient-to-r from-indigo-50 to-purple-50 rounded-2xl">
+            <div className="w-16 h-16 bg-gradient-to-r from-indigo-500 to-purple-600 rounded-2xl mx-auto mb-4 flex items-center justify-center">
+              <MapPin className="w-8 h-8 text-white" />
             </div>
+            <h3 className="text-xl font-semibold text-gray-800 mb-2">
+              Ready to explore?
+            </h3>
+            <p className="text-gray-600">
+              Configure your API keys in settings and start discovering amazing places with AI.
+            </p>
           </div>
-        )}
+        </div>
+      );
+    }
+    return null; // Don't show anything if keys are available
+  })()
+)}
       </div>
     </div>
   );
