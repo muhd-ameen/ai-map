@@ -34,20 +34,6 @@ export const ResultCard: React.FC<ResultCardProps> = ({ place, index }) => {
     return '$'.repeat(level);
   };
 
-  const getOpenStatus = () => {
-    if (!place.opening_hours) return null;
-    return place.opening_hours.open_now ? (
-      <span className="inline-flex items-center gap-1 px-2 py-1 bg-green-100 text-green-700 text-xs font-medium rounded-lg">
-        <Clock className="w-3 h-3" />
-        Open Now
-      </span>
-    ) : (
-      <span className="inline-flex items-center gap-1 px-2 py-1 bg-red-100 text-red-700 text-xs font-medium rounded-lg">
-        <Clock className="w-3 h-3" />
-        Closed
-      </span>
-    );
-  };
 
   return (
     <div
